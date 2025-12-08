@@ -116,6 +116,16 @@
     transform: translateY(8px);
     animation: fadeSlide 0.6s ease-out forwards;
   }
+/* 特別カード */
+  .status-card.special {
+  background: #e0f7ff;   /* 淡い青 */
+  border-color: #a0d4ff; /* 枠線も微調整 */
+}
+
+.status-card.special .service-name {
+  color: #007acc;
+}
+
   
   @keyframes fadeSlide {
     to {
@@ -189,8 +199,8 @@
     </span>サーバー休止中</div>
   <!-- ▼▼ 複数サービス（追加可能） ▼▼ -->
   <div class="service-list">
-    <div class="status-card">
-      <div class="service-name">鯖主(KaziKi)</div>
+    <div class="status-card special">
+      <div class="service-name">鯖主</div>
       <div class="badge stopped">
         <span class="status-dot">
         </span>オフライン</div>
