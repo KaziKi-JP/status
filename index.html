@@ -12,7 +12,7 @@
   <title>サービス稼働状況</title>
   <style>
   /*---------------------------------------
-    基本スタイル（LoiloNote風）
+    基本スタイル
   ----------------------------------------*/
   body {
     font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -52,7 +52,7 @@
     総合ステータスバー
   ----------------------------------------*/
   .global-status {
-    margin-top: 80px;
+    margin-top: 85px;
     text-align: center;
     padding: 14px 0;
     font-weight: 600;
@@ -118,7 +118,7 @@
   }
 /* 特別カード */
   .status-card.special {
-  background: #e0f7ff;   /* 淡い青 */
+  background: #34c759;   /* 淡い青はe0f7ff */
   border-color: #e0f7ff; 
   margin-bottom: 30px; /* 下に30pxの余白を追加 */
 }
@@ -195,34 +195,34 @@
     <p>最終更新: 2025/12/9 8:00</p>
   </header>
   <!-- 全体ステータスバー -->
-  <div class="global-status stopped">
+  <div class="global-status up">
     <span class="status-dot">
-    </span>サーバー休止中 只今サーバーに参加することはできません。</div>
+    </span>サーバー稼働中　サーバーに参加できます</div>
   <!-- ▼▼ 複数サービス（追加可能） ▼▼ -->
   <div class="service-list">
     <div class="status-card special">
       <div class="service-name">鯖主</div>
       <div class="badge stopped">
         <span class="status-dot">
-        </span>オフライン</div>
+        </span>オンライン</div>
     </div>
     <div class="status-card">
       <div class="service-name">Minecraftサーバー</div>
-      <div class="badge maint">
+      <div class="badge up">
         <span class="status-dot">
-        </span>メンテナンス中</div>
+        </span>稼働中</div>
     </div>
     <div class="status-card">
       <div class="service-name">通信サーバー</div>
-      <div class="badge stopped">
+      <div class="badge up">
         <span class="status-dot">
-        </span>停止中</div>
+        </span>稼働中</div>
     </div>
     <div class="status-card">
       <div class="service-name">BE仲介サーバー</div>
-      <div class="badge stopped">
+      <div class="badge up">
         <span class="status-dot">
-        </span>停止中</div>
+        </span>稼働中</div>
     </div>
   </div>
   <footer>© 2025 KKserver</footer>
