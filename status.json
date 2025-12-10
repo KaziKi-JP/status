@@ -7,8 +7,8 @@
   "services": [
     {
       "name": "鯖主",
-      "status": "up",
-      "label": "オンライン",
+      "status": "down",
+      "label": "オフライン",
       "special": true
     },
     {
