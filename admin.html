@@ -245,6 +245,7 @@ footer {
 
 
 <script>
+<script>
 function notify(msg) {
   const bar = document.getElementById("notify");
   bar.textContent = msg;
@@ -254,6 +255,22 @@ function notify(msg) {
 
 function apiUrl(repo, path) {
   return `https://api.github.com/repos/${repo}/contents/${path}`;
+}
+
+/* ===========================
+   UTF-8 Base64 変換
+=========================== */
+function base64ToUtf8(base64) {
+  const bin = atob(base64);
+  const bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
+  return new TextDecoder("utf-8").decode(bytes);
+}
+
+function utf8ToBase64(str) {
+  const bytes = new TextEncoder().encode(str);
+  let bin = "";
+  bytes.forEach(b => bin += String.fromCharCode(b));
+  return btoa(bin);
 }
 
 /* ===========================
@@ -272,12 +289,14 @@ async function loadStatus() {
     if (!res.ok) throw new Error("読み込み失敗");
 
     const data = await res.json();
-    const content = JSON.parse(atob(data.content));
+
+    // ★ UTF-8 でデコード
+    const jsonText = base64ToUtf8(data.content);
+    const content = JSON.parse(jsonText);
 
     document.getElementById("global_status").value = content.global.status;
     document.getElementById("global_message").value = content.global.label;
 
-    // ★ services に正しくセット
     services = content.services;
 
     renderServices(services);
@@ -368,11 +387,14 @@ async function saveStatus() {
   };
 
   try {
+    // 現在の SHA を取得
     const getRes = await fetch(apiUrl(repoVal, pathVal), {
       headers: { Authorization: `Bearer ${tokenVal}` }
     });
-
     const getData = await getRes.json();
+
+    // ★ UTF-8 でエンコードして保存
+    const encoded = utf8ToBase64(JSON.stringify(body, null, 2));
 
     const putRes = await fetch(apiUrl(repoVal, pathVal), {
       method: "PUT",
@@ -382,7 +404,7 @@ async function saveStatus() {
       },
       body: JSON.stringify({
         message: "Update status",
-        content: btoa(unescape(encodeURIComponent(JSON.stringify(body, null, 2)))),
+        content: encoded,
         sha: getData.sha
       })
     });
@@ -396,6 +418,8 @@ async function saveStatus() {
 }
 
 let services = [];
+</script>
+
 </script>
 
 
