@@ -256,9 +256,7 @@ function apiUrl(repo, path) {
   return `https://api.github.com/repos/${repo}/contents/${path}`;
 }
 
-/* ===========================
-   UTF-8 Base64 変換
-=========================== */
+/* UTF-8 Base64 変換 */
 function base64ToUtf8(base64) {
   const bin = atob(base64);
   const bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
@@ -272,9 +270,7 @@ function utf8ToBase64(str) {
   return btoa(bin);
 }
 
-/* ===========================
-   ステータス読み込み
-=========================== */
+/* ステータス読み込み */
 async function loadStatus() {
   const tokenVal = document.getElementById("token").value;
   const repoVal  = document.getElementById("repo").value;
@@ -284,12 +280,9 @@ async function loadStatus() {
     const res = await fetch(apiUrl(repoVal, pathVal), {
       headers: { Authorization: `Bearer ${tokenVal}` }
     });
-
     if (!res.ok) throw new Error("読み込み失敗");
 
     const data = await res.json();
-
-    // ★ UTF-8 でデコード
     const jsonText = base64ToUtf8(data.content);
     const content = JSON.parse(jsonText);
 
@@ -297,17 +290,15 @@ async function loadStatus() {
     document.getElementById("global_message").value = content.global.label;
 
     services = content.services;
-
     renderServices(services);
+
     notify("読み込み成功！");
   } catch (e) {
     notify("エラー: " + e.message);
   }
 }
 
-/* ===========================
-   サービス描画
-=========================== */
+/* サービス描画（special チェック追加） */
 function renderServices(list) {
   const box = document.getElementById("serviceList");
   box.innerHTML = "";
@@ -331,6 +322,11 @@ function renderServices(list) {
       <label>ラベル</label>
       <input type="text" data-i="${i}" data-field="label" value="${svc.label}">
 
+      <label>
+        <input type="checkbox" data-i="${i}" data-field="special" ${svc.special ? "checked" : ""}>
+        特別扱い (special)
+      </label>
+
       <button class="remove-btn" onclick="removeService(${i})">削除</button>
     `;
 
@@ -338,42 +334,41 @@ function renderServices(list) {
   });
 }
 
-/* ===========================
-   サービス追加
-=========================== */
+/* サービス追加 */
 function addService() {
   services.push({
     name: "新しいサービス",
     status: "up",
-    label: "稼働中"
+    label: "稼働中",
+    special: false
   });
   renderServices(services);
 }
 
-/* ===========================
-   サービス削除
-=========================== */
+/* サービス削除 */
 function removeService(i) {
   services.splice(i, 1);
   renderServices(services);
 }
 
-/* ===========================
-   保存
-=========================== */
+/* 保存 */
 async function saveStatus() {
   const tokenVal = document.getElementById("token").value;
   const repoVal  = document.getElementById("repo").value;
   const pathVal  = document.getElementById("path").value;
 
-  // UI → 配列再構築
   const inputs = document.querySelectorAll("[data-field]");
   const newList = [];
 
   inputs.forEach(i => {
     const index = Number(i.dataset.i);
     if (!newList[index]) newList[index] = {};
-    newList[index][i.dataset.field] = i.value;
+
+    if (i.dataset.field === "special") {
+      newList[index][i.dataset.field] = i.checked;
+    } else {
+      newList[index][i.dataset.field] = i.value;
+    }
   });
 
   const body = {
@@ -386,13 +381,11 @@ async function saveStatus() {
   };
 
   try {
-    // 現在の SHA を取得
     const getRes = await fetch(apiUrl(repoVal, pathVal), {
       headers: { Authorization: `Bearer ${tokenVal}` }
     });
     const getData = await getRes.json();
 
-    // ★ UTF-8 でエンコードして保存
     const encoded = utf8ToBase64(JSON.stringify(body, null, 2));
 
     const putRes = await fetch(apiUrl(repoVal, pathVal), {
