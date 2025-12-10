@@ -1,8 +1,8 @@
 {
-  "updated": "2025-01-01 00:00:00",
+  "updated": "2025-12-10 07:26:39",
   "global": {
-    "status": "up",
-    "label": "稼働中"
+    "status": "nomal",
+    "label": "サーバーに参加できますが、不安定です。"
   },
   "services": [
     {
@@ -13,18 +13,21 @@
     },
     {
       "name": "Minecraft",
-      "status": "up",
-      "label": "稼働中"
+      "status": "nomal",
+      "label": "不安定",
+      "special": false
     },
     {
       "name": "通信サーバー",
       "status": "up",
-      "label": "稼働中"
+      "label": "稼働中",
+      "special": false
     },
     {
       "name": "BE仲介サーバー",
       "status": "up",
-      "label": "稼働中"
+      "label": "稼働中",
+      "special": false
     }
   ]
 }
