@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Status 管理画面</title>
+
+<style>
+body {
+  font-family: "Segoe UI", sans-serif;
+  background: #f5f7fa;
+  padding: 20px;
+  margin: 0;
+}
+
+h1 {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+label {
+  display: block;
+  margin-top: 12px;
+  font-weight: 600;
+}
+
+select, input[type="text"], input[type="password"] {
+  width: 100%;
+  padding: 10px;
+  margin-top: 6px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+button {
+  width: 100%;
+  padding: 14px;
+  margin-top: 20px;
+  background: #007aff;
+  color: white;
+  border: none;
+  font-size: 16px;
+  border-radius: 8px;
+}
+
+.status-box {
+  padding: 10px;
+  background: #eef3ff;
+  border-radius: 8px;
+  margin-top: 10px;
+}
+</style>
+
+</head>
+<body>
+<h1>ステータス管理画面</h1>
+
+<div class="card">
+  <h3>GitHub 設定</h3>
+
+  <label>GitHub Token（必須）</label>
+  <input type="password" id="token" placeholder="GitHub Token を入力">
+
+  <label>Repository</label>
+  <input type="text" id="repo" value="kaziki-jp/status">
+
+  <label>status.json のパス</label>
+  <input type="text" id="path" value="status/status.json">
+
+  <button onclick="loadStatus()">現在のステータスを読み込む</button>
+
+  <div id="loadResult" class="status-box"></div>
+</div>
+
+<div class="card">
+  <h3>ステータス編集</h3>
+
+  <label>全体ステータス</label>
+  <select id="global_status">
+    <option value="up">正常</option>
+    <option value="nomal">不安定</option>
+    <option value="down">異常</option>
+    <option value="maint">メンテナンス</option>
+  </select>
+
+  <label>全体メッセージ</label>
+  <input type="text" id="global_message" placeholder="例: サーバーメンテナンス中">
+
+  <h3>個別サービス</h3>
+
+  <label>鯖主</label>
+  <select id="owner_status">
+    <option value="up">正常</option>
+    <option value="nomal">不安定</option>
+    <option value="down">オフライン</option>
+    <option value="maint">メンテナンス</option>
+  </select>
+  <input id="owner_label" type="text" placeholder="ラベル（例: オフラインなど）">
+
+  <label>Minecraft サーバー（※以下2つと連動）</label>
+  <select id="mc_status">
+    <option value="up">正常</option>
+    <option value="nomal">不安定</option>
+    <option value="down">異常</option>
+    <option value="maint">メンテナンス</option>
+  </select>
+  <input id="mc_label" type="text" placeholder="ラベル（例: 稼働中-不安定）">
+
+  <p>BE仲介サーバー & 通信サーバー は Minecraft と同じステータスが適用されます。</p>
+
+  <button onclick="saveStatus()">ステータスを保存する</button>
+
+  <div id="saveResult" class="status-box"></div>
+</div>
+
+<script>
+// GitHub API URL
+function apiUrl(repo, path) {
+  return `https://api.github.com/repos/${repo}/contents/${path}`;
+}
+
+// status.json を読み込む
+async function loadStatus() {
+  const token = tokenInput.value;
+  const repo = repoInput.value;
+  const path = pathInput.value;
+
+  try {
+    const res = await fetch(apiUrl(repo, path), {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    if (!res.ok) throw new Error("読み込み失敗");
+
+    const data = await res.json();
+    const content = JSON.parse(atob(data.content));
+
+    // 各項目を表示
+    global_status.value = content.global.status;
+    global_message.value = content.global.message;
+
+    owner_status.value = content.services.owner.status;
+    owner_label.value = content.services.owner.label;
+
+    mc_status.value = content.services.minecraft.status;
+    mc_label.value = content.services.minecraft.label;
+
+    loadResult.textContent = "読み込み完了しました。";
+  } catch (e) {
+    loadResult.textContent = "エラー: " + e.message;
+  }
+}
+
+// ステータス保存
+async function saveStatus() {
+  const token = tokenInput.value;
+  const repo = repoInput.value;
+  const path = pathInput.value;
+
+  const now = new Date();
+  const updated = now.toLocaleString("ja-JP", { hour12: false });
+
+  const body = {
+    updated: updated,
+    global: {
+      status: global_status.value,
+      message: global_message.value
+    },
+    services: {
+      owner: {
+        status: owner_status.value,
+        label: owner_label.value
+      },
+      minecraft: {
+        status: mc_status.value,
+        label: mc_label.value
+      },
+      // BE仲介 / 通信 は Minecraft と連動
+      be: {
+        status: mc_status.value,
+        label: mc_label.value
+      },
+      network: {
+        status: mc_status.value,
+        label: mc_label.value
+      }
+    }
+  };
+
+  try {
+    // 既存ファイルの SHA を取得
+    const getRes = await fetch(apiUrl(repo, path), {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const getData = await getRes.json();
+
+    // GitHub へ PUT
+    const putRes = await fetch(apiUrl(repo, path), {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        message: "Update status",
+        content: btoa(unescape(encodeURIComponent(JSON.stringify(body,null,2)))),
+        sha: getData.sha
+      })
+    });
+
+    if (!putRes.ok) throw new Error("保存失敗");
+
+    saveResult.textContent = "保存しました！";
+
+  } catch (e) {
+    saveResult.textContent = "エラー: " + e.message;
+  }
+}
+</script>
+
+</body>
+</html>
