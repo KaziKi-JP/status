@@ -1,0 +1,30 @@
+{
+  "updated": "2025-01-01 00:00:00",
+  "global": {
+    "status": "up",
+    "label": "稼働中"
+  },
+  "services": [
+    {
+      "name": "鯖主",
+      "status": "up",
+      "label": "オンライン",
+      "special": true
+    },
+    {
+      "name": "Minecraft",
+      "status": "up",
+      "label": "稼働中"
+    },
+    {
+      "name": "通信サーバー",
+      "status": "up",
+      "label": "稼働中"
+    },
+    {
+      "name": "BE仲介サーバー",
+      "status": "up",
+      "label": "稼働中"
+    }
+  ]
+}
