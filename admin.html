@@ -2,283 +2,396 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>Status 管理画面</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Status 管理パネル</title>
 
 <style>
-    body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        background: #111;
-        color: #fff;
-        margin: 0;
-        padding: 20px;
-    }
+/* =============================
+   Base
+============================= */
+body {
+  font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: #f5f7fa;
+  margin: 0;
+  color: #333;
+}
 
-    h1, h2 {
-        font-weight: 600;
-        border-left: 6px solid #4caf50;
-        padding-left: 10px;
-    }
+/* =============================
+   Header
+============================= */
+header {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(10px);
+  padding: 18px 28px 14px;
+  border-bottom: 1px solid rgba(200, 200, 200, 0.4);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
 
-    .card {
-        background: #1b1b1b;
-        padding: 15px;
-        border-radius: 10px;
-        margin-bottom: 20px;
-        border: 1px solid #333;
-    }
+header h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+}
 
-    input, select {
-        width: 100%;
-        padding: 8px;
-        margin-top: 6px;
-        margin-bottom: 12px;
-        border-radius: 6px;
-        border: 1px solid #555;
-        background: #000;
-        color: #fff;
-    }
+.admin-badge {
+  background: rgba(255, 59, 48, 0.85);
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  backdrop-filter: blur(4px);
+}
 
-    button {
-        background: #4caf50;
-        color: #fff;
-        border: none;
-        padding: 10px 16px;
-        font-size: 15px;
-        border-radius: 6px;
-        cursor: pointer;
-        margin: 6px 0;
-    }
+main {
+  max-width: 780px;
+  margin: 110px auto;
+  padding: 0 20px;
+}
 
-    button:hover {
-        opacity: 0.9;
-    }
+/* =============================
+   Card (Glass UI)
+============================= */
+.card {
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(10px);
+  border-radius: 14px;
+  border: 1px solid rgba(220,220,220,0.6);
+  padding: 22px 28px;
+  margin-bottom: 24px;
 
-    .delete-btn {
-        background: #e53935;
-        margin-top: 10px;
-    }
+  box-shadow:
+    0 4px 12px rgba(0,0,0,0.06),
+    0 2px 8px rgba(0,0,0,0.04);
+  animation: fadeIn 0.5s ease-out;
+}
 
-    .service-title {
-        font-size: 18px;
-        margin-bottom: 8px;
-    }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
-    .status-msg {
-        margin-top: 10px;
-        font-size: 14px;
-        color: #4caf50;
-    }
+/* =============================
+   Form UI
+============================= */
+label {
+  display: block;
+  margin-top: 12px;
+  font-weight: 600;
+}
+
+input[type="text"],
+input[type="password"],
+select {
+  width: 100%;
+  padding: 10px 12px;
+  margin-top: 6px;
+  border-radius: 8px;
+  border: 1px solid rgba(140,140,140,0.4);
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(6px);
+  font-size: 15px;
+  transition: 0.25s;
+}
+
+input:hover, select:hover {
+  border-color: #007aff;
+}
+
+button {
+  width: 100%;
+  padding: 14px;
+  margin-top: 20px;
+  background: #007aff;
+  color: white;
+  border: none;
+  font-size: 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  transition: 0.25s;
+}
+
+button:hover {
+  background: #0062d6;
+}
+
+/* =============================
+   Service Item UI
+============================= */
+.service-item {
+  background: rgba(255,255,255,0.75);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(200,200,200,0.5);
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 14px;
+
+  box-shadow:
+    0 3px 8px rgba(0,0,0,0.05),
+    0 1px 4px rgba(0,0,0,0.04);
+}
+
+.remove-btn {
+  background: #ff3b30;
+  margin-top: 8px;
+}
+
+/* =============================
+   Notify Banner
+============================= */
+#notify {
+  position: fixed;
+  top: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(10px);
+  padding: 14px 22px;
+  border-radius: 12px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+  font-weight: 600;
+  font-size: 15px;
+  color: #333;
+  transition: all 0.4s ease;
+  border: 1px solid rgba(200,200,200,0.5);
+  z-index: 100;
+}
+
+#notify.show {
+  top: 20px;
+}
+
+/* =============================
+   Footer
+============================= */
+footer {
+  margin-top: 60px;
+  text-align: center;
+  font-size: 12px;
+  color: #999;
+  padding-bottom: 30px;
+}
 </style>
 </head>
+
 <body>
+<header>
+  <h1>ステータス管理</h1>
+  <span class="admin-badge">ADMIN PANEL</span>
+</header>
 
-<h1>ステータス管理画面</h1>
+<div id="notify"></div>
 
+<main>
+
+<!-- GitHub 設定 -->
 <div class="card">
-    <h2>GitHub 設定</h2>
-    <label>リポジトリ所有者：
-        <input id="owner" value="kaziki-jp">
-    </label>
+  <h3>GitHub 設定</h3>
 
-    <label>リポジトリ名：
-        <input id="repo" value="status">
-    </label>
+  <label>GitHub Token（必須）</label>
+  <input type="password" id="token" placeholder="GitHub Token を入力">
 
-    <label>Token（Classic Token repo権限）：
-        <input id="token" type="password">
-    </label>
+  <label>Repository</label>
+  <input type="text" id="repo" value="KaziKi-JP/status">
+
+  <label>status.json のパス</label>
+  <input type="text" id="path" value="status.json">
+
+  <button onclick="loadStatus()">現在のステータスを読み込む</button>
+  
+  <div id="loadResult"></div>
 </div>
 
+
+<!-- ステータス編集 -->
 <div class="card">
-    <h2>現在のステータスを読み込む</h2>
-    <button onclick="loadStatus()">読み込む</button>
-    <div id="loadMessage" class="status-msg"></div>
+  <h3>全体ステータス</h3>
+
+  <label>全体ステータス</label>
+  <select id="global_status">
+    <option value="up">正常</option>
+    <option value="nomal">不安定</option>
+    <option value="down">異常</option>
+    <option value="maint">メンテナンス</option>
+  </select>
+
+  <label>メッセージ</label>
+  <input type="text" id="global_message">
+
 </div>
 
+
+<!-- サービス編集 -->
 <div class="card">
-    <h2>全体ステータス</h2>
+  <h3>サービス一覧</h3>
 
-    <label>状態：
-        <select id="global_status">
-            <option value="up">up（稼働中）</option>
-            <option value="down">down（ダウン）</option>
-            <option value="nomal">nomal（不安定）</option>
-            <option value="maint">maint（メンテ）</option>
-        </select>
-    </label>
+  <div id="serviceList"></div>
 
-    <label>ラベル：
-        <input id="global_label">
-    </label>
+  <button onclick="addService()">＋ サービス追加</button>
+  <button onclick="saveStatus()">ステータスを保存する</button>
+
+  <div id="saveResult"></div>
 </div>
 
-<div class="card">
-    <h2>サービス一覧</h2>
-    <div id="services"></div>
-    <button onclick="addService()">＋ サービス追加</button>
-</div>
+<footer>© 2025 KKserver</footer>
 
-<div class="card">
-    <h2>保存</h2>
-    <button onclick="saveStatus()">status.json を更新する</button>
-    <div id="saveMessage" class="status-msg"></div>
-</div>
+</main>
 
 
 <script>
-// ----------- サービスブロック生成 -----------
-function createServiceBlock(service, index) {
-    return `
-    <div class="card" id="service_${index}">
-        <div class="service-title">サービス #${index + 1}</div>
-
-        <label>サービス名：
-            <input value="${service.name}" class="s_name">
-        </label>
-
-        <label>ステータス：
-            <select class="s_status">
-                <option value="up" ${service.status === "up" ? "selected" : ""}>up</option>
-                <option value="down" ${service.status === "down" ? "selected" : ""}>down</option>
-                <option value="nomal" ${service.status === "nomal" ? "selected" : ""}>nomal</option>
-                <option value="maint" ${service.status === "maint" ? "selected" : ""}>maint</option>
-            </select>
-        </label>
-
-        <label>ラベル：
-            <input value="${service.label}" class="s_label">
-        </label>
-
-        <label>
-            <input type="checkbox" class="s_special" ${service.special ? "checked" : ""}>
-            special（任意）
-        </label>
-
-        <button class="delete-btn" onclick="deleteService(${index})">削除</button>
-    </div>`;
+/* ========== 共通 ========== */
+function notify(msg) {
+  const bar = document.getElementById("notify");
+  bar.textContent = msg;
+  bar.classList.add("show");
+  setTimeout(() => {
+    bar.classList.remove("show");
+  }, 2500);
 }
 
-// ----------- サービス追加 -----------
-function addService() {
-    const index = document.getElementById("services").children.length;
-    const newService = {
-        name: "新しいサービス",
-        status: "up",
-        label: "稼働中",
-        special: false
-    };
-
-    document.getElementById("services").insertAdjacentHTML(
-        "beforeend",
-        createServiceBlock(newService, index)
-    );
+function apiUrl(repo, path) {
+  return `https://api.github.com/repos/${repo}/contents/${path}`;
 }
 
-// ----------- サービス削除 -----------
-function deleteService(index) {
-    document.getElementById("service_" + index).remove();
-}
-
-// ----------- JST 現在時刻生成 -----------
-function getJSTTimeString() {
-    const date = new Date();
-    return date.toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })
-        .replace(/\//g, "-")
-        .replace(" ", " ");  
-}
-
-// ----------- 読み込み -----------
+/* ========== ステータス読み込み ========== */
 async function loadStatus() {
-    const owner = document.getElementById("owner").value;
-    const repo = document.getElementById("repo").value;
+  const token = token.value;
+  const repo = repo.value;
+  const path = path.value;
 
-    document.getElementById("loadMessage").innerText = "読み込み中…";
+  try {
+    const res = await fetch(apiUrl(repo, path), {
+      headers: { Authorization: `Bearer ${token}` }
+    });
 
-    try {
-        const res = await fetch(`https://raw.githubusercontent.com/${owner}/${repo}/main/status.json?t=${Date.now()}`);
-        if (!res.ok) throw new Error("status.json が読み込めません");
+    if (!res.ok) throw new Error("読み込み失敗");
 
-        const content = await res.json();
+    const data = await res.json();
+    const content = JSON.parse(atob(data.content));
 
-        document.getElementById("global_status").value = content.global.status;
-        document.getElementById("global_label").value = content.global.label;
+    global_status.value = content.global.status;
+    global_message.value = content.global.label;
 
-        const list = document.getElementById("services");
-        list.innerHTML = "";
-        content.services.forEach((srv, idx) => {
-            list.insertAdjacentHTML("beforeend", createServiceBlock(srv, idx));
-        });
+    renderServices(content.services);
 
-        document.getElementById("loadMessage").innerText = "読み込み成功！";
-
-    } catch (e) {
-        document.getElementById("loadMessage").innerText = "エラー: " + e.message;
-    }
+    notify("読み込み成功！");
+  } catch (e) {
+    notify("エラー: " + e.message);
+  }
 }
 
-// ----------- 保存（JST対応） -----------
+/* ========== サービス描画 ========== */
+function renderServices(list) {
+  const box = document.getElementById("serviceList");
+  box.innerHTML = "";
+
+  list.forEach((svc, i) => {
+    const el = document.createElement("div");
+    el.classList.add("service-item");
+
+    el.innerHTML = `
+      <label>サービス名</label>
+      <input type="text" data-i="${i}" data-field="name" value="${svc.name}">
+
+      <label>ステータス</label>
+      <select data-i="${i}" data-field="status">
+        <option value="up"    ${svc.status==="up"?"selected":""}>正常</option>
+        <option value="nomal" ${svc.status==="nomal"?"selected":""}>不安定</option>
+        <option value="down"  ${svc.status==="down"?"selected":""}>異常</option>
+        <option value="maint" ${svc.status==="maint"?"selected":""}>メンテナンス</option>
+      </select>
+
+      <label>ラベル</label>
+      <input type="text" data-i="${i}" data-field="label" value="${svc.label}">
+
+      <button class="remove-btn" onclick="removeService(${i})">削除</button>
+    `;
+
+    box.appendChild(el);
+  });
+}
+
+/* ========== サービス追加 ========== */
+function addService() {
+  services.push({
+    name: "新しいサービス",
+    status: "up",
+    label: "稼働中"
+  });
+  renderServices(services);
+}
+
+/* ========== サービス削除 ========== */
+function removeService(i) {
+  services.splice(i, 1);
+  renderServices(services);
+}
+
+/* ========== 保存 ========== */
 async function saveStatus() {
-    const owner = document.getElementById("owner").value;
-    const repo = document.getElementById("repo").value;
-    const token = document.getElementById("token").value;
+  const tokenVal = token.value;
+  const repoVal = repo.value;
+  const pathVal = path.value;
 
-    document.getElementById("saveMessage").innerText = "保存中…";
+  // UI からサービスを再構築
+  const inputs = document.querySelectorAll("[data-field]");
+  const servicesTemp = {};
+  const newList = [];
 
-    if (!token) {
-        alert("Token を入力してください");
-        return;
-    }
+  inputs.forEach(i => {
+    const index = Number(i.dataset.i);
+    if (!newList[index]) newList[index] = {};
 
-    // 収集
-    const services = [...document.getElementById("services").children].map(div => ({
-        name: div.querySelector(".s_name").value,
-        status: div.querySelector(".s_status").value,
-        label: div.querySelector(".s_label").value,
-        special: div.querySelector(".s_special").checked
-    }));
+    newList[index][i.dataset.field] = i.value;
+  });
 
-    const data = {
-        updated: getJSTTimeString(),  // ← JST
-        global: {
-            status: document.getElementById("global_status").value,
-            label: document.getElementById("global_label").value
-        },
-        services: services
-    };
+  const now = new Date().toLocaleString("ja-JP", { hour12: false });
 
-    // SHA 取得
-    const shaRes = await fetch(
-        `https://api.github.com/repos/${owner}/${repo}/contents/status.json`,
-        { headers: { Authorization: `token ${token}` } }
-    );
+  const body = {
+    updated: now,
+    global: {
+      status: global_status.value,
+      label: global_message.value
+    },
+    services: newList
+  };
 
-    if (!shaRes.ok) {
-        document.getElementById("saveMessage").innerText = "エラー: SHA取得失敗";
-        return;
-    }
+  try {
+    const getRes = await fetch(apiUrl(repoVal, pathVal), {
+      headers: { Authorization: `Bearer ${tokenVal}` }
+    });
+    const getData = await getRes.json();
 
-    const sha = (await shaRes.json()).sha;
+    const putRes = await fetch(apiUrl(repoVal, pathVal), {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${tokenVal}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        message: "Update status",
+        content: btoa(unescape(encodeURIComponent(JSON.stringify(body, null, 2)))),
+        sha: getData.sha
+      })
+    });
 
-    // 更新
-    const updateRes = await fetch(
-        `https://api.github.com/repos/${owner}/${repo}/contents/status.json`,
-        {
-            method: "PUT",
-            headers: {
-                Authorization: `token ${token}`,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                message: "Update status.json",
-                content: btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2)))),
-                sha: sha
-            })
-        }
-    );
+    if (!putRes.ok) throw new Error("保存失敗");
 
-    document.getElementById("saveMessage").innerText =
-        updateRes.ok ? "保存成功！" : "保存エラー";
+    notify("保存しました！");
+  } catch (e) {
+    notify("エラー: " + e.message);
+  }
 }
+
+/* 初期空配列 */
+let services = [];
 </script>
+
 </body>
 </html>
