@@ -122,6 +122,23 @@ button {
 </div>
 
 <script>
+// DOM 取得
+const tokenInput = document.getElementById("token");
+const repoInput  = document.getElementById("repo");
+const pathInput  = document.getElementById("path");
+
+const global_status  = document.getElementById("global_status");
+const global_message = document.getElementById("global_message");
+
+const owner_status = document.getElementById("owner_status");
+const owner_label  = document.getElementById("owner_label");
+
+const mc_status = document.getElementById("mc_status");
+const mc_label  = document.getElementById("mc_label");
+
+const loadResult = document.getElementById("loadResult");
+const saveResult = document.getElementById("saveResult");
+
 // GitHub API URL
 function apiUrl(repo, path) {
   return `https://api.github.com/repos/${repo}/contents/${path}`;
@@ -130,8 +147,8 @@ function apiUrl(repo, path) {
 // status.json を読み込む
 async function loadStatus() {
   const token = tokenInput.value;
-  const repo = repoInput.value;
-  const path = pathInput.value;
+  const repo  = repoInput.value;
+  const path  = pathInput.value;
 
   try {
     const res = await fetch(apiUrl(repo, path), {
@@ -143,15 +160,15 @@ async function loadStatus() {
     const data = await res.json();
     const content = JSON.parse(atob(data.content));
 
-    // 各項目を表示
-    global_status.value = content.global.status;
+    // UI へ反映
+    global_status.value  = content.global.status;
     global_message.value = content.global.message;
 
     owner_status.value = content.services.owner.status;
-    owner_label.value = content.services.owner.label;
+    owner_label.value  = content.services.owner.label;
 
     mc_status.value = content.services.minecraft.status;
-    mc_label.value = content.services.minecraft.label;
+    mc_label.value  = content.services.minecraft.label;
 
     loadResult.textContent = "読み込み完了しました。";
   } catch (e) {
@@ -162,8 +179,8 @@ async function loadStatus() {
 // ステータス保存
 async function saveStatus() {
   const token = tokenInput.value;
-  const repo = repoInput.value;
-  const path = pathInput.value;
+  const repo  = repoInput.value;
+  const path  = pathInput.value;
 
   const now = new Date();
   const updated = now.toLocaleString("ja-JP", { hour12: false });
@@ -183,7 +200,6 @@ async function saveStatus() {
         status: mc_status.value,
         label: mc_label.value
       },
-      // BE仲介 / 通信 は Minecraft と連動
       be: {
         status: mc_status.value,
         label: mc_label.value
@@ -196,13 +212,16 @@ async function saveStatus() {
   };
 
   try {
-    // 既存ファイルの SHA を取得
+    // 既存ファイル SHA
     const getRes = await fetch(apiUrl(repo, path), {
       headers: { Authorization: `Bearer ${token}` }
     });
+
+    if (!getRes.ok) throw new Error("SHA取得失敗");
+
     const getData = await getRes.json();
 
-    // GitHub へ PUT
+    // 更新 PUT
     const putRes = await fetch(apiUrl(repo, path), {
       method: "PUT",
       headers: {
@@ -211,7 +230,7 @@ async function saveStatus() {
       },
       body: JSON.stringify({
         message: "Update status",
-        content: btoa(unescape(encodeURIComponent(JSON.stringify(body,null,2)))),
+        content: btoa(unescape(encodeURIComponent(JSON.stringify(body, null, 2)))),
         sha: getData.sha
       })
     });
@@ -225,6 +244,7 @@ async function saveStatus() {
   }
 }
 </script>
+
 
 </body>
 </html>
