@@ -2,249 +2,236 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Status 管理画面</title>
-
 <style>
-body {
-  font-family: "Segoe UI", sans-serif;
-  background: #f5f7fa;
-  padding: 20px;
-  margin: 0;
-}
-
-h1 {
-  font-size: 24px;
-  margin-bottom: 10px;
-}
-
-.card {
-  background: #fff;
-  padding: 20px;
-  border-radius: 12px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-}
-
-label {
-  display: block;
-  margin-top: 12px;
-  font-weight: 600;
-}
-
-select, input[type="text"], input[type="password"] {
-  width: 100%;
-  padding: 10px;
-  margin-top: 6px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-}
-
-button {
-  width: 100%;
-  padding: 14px;
-  margin-top: 20px;
-  background: #007aff;
-  color: white;
-  border: none;
-  font-size: 16px;
-  border-radius: 8px;
-}
-
-.status-box {
-  padding: 10px;
-  background: #eef3ff;
-  border-radius: 8px;
-  margin-top: 10px;
-}
+    body { font-family: sans-serif; padding: 20px; }
+    h2 { margin-top: 40px; }
+    .service { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; }
+    .row { margin-bottom: 5px; }
+    button { padding: 6px 12px; }
 </style>
-
 </head>
 <body>
+
 <h1>ステータス管理画面</h1>
 
-<div class="card">
-  <h3>GitHub 設定</h3>
-
-  <label>GitHub Token（必須）</label>
-  <input type="password" id="token" placeholder="GitHub Token を入力">
-
-  <label>Repository</label>
-  <input type="text" id="repo" value="kaziki-jp/status">
-
-  <label>status.json のパス</label>
-  <input type="text" id="path" value="status/status.json">
-
-  <button onclick="loadStatus()">現在のステータスを読み込む</button>
-
-  <div id="loadResult" class="status-box"></div>
+<h2>GitHub 設定</h2>
+<div>
+    <label>リポジトリ所有者（GitHub ユーザー名）：<br>
+        <input id="owner" value="kaziki-jp" style="width:300px">
+    </label><br><br>
+    <label>リポジトリ名：<br>
+        <input id="repo" value="status" style="width:300px">
+    </label><br><br>
+    <label>Token（repo 権限付き Classic Token）：<br>
+        <input id="token" type="password" style="width:300px">
+    </label>
 </div>
 
-<div class="card">
-  <h3>ステータス編集</h3>
+<hr>
 
-  <label>全体ステータス</label>
-  <select id="global_status">
-    <option value="up">正常</option>
-    <option value="nomal">不安定</option>
-    <option value="down">異常</option>
-    <option value="maint">メンテナンス</option>
-  </select>
+<h2>現在のステータスを読み込む</h2>
+<button onclick="loadStatus()">読み込む</button>
+<div id="loadMessage"></div>
 
-  <label>全体メッセージ</label>
-  <input type="text" id="global_message" placeholder="例: サーバー稼働中 サーバーに参加できます。">
+<hr>
 
-  <h3>個別サービス</h3>
+<h2>全体ステータス</h2>
+<label>
+    状態：
+    <select id="global_status">
+        <option value="up">up (稼働中)</option>
+        <option value="down">down (ダウン)</option>
+        <option value="nomal">nomal (不安定)</option>
+        <option value="maint">maint (メンテ)</option>
+    </select>
+</label>
+<br><br>
+<label>
+    ラベル：
+    <input id="global_label" style="width:200px">
+</label>
 
-  <label>鯖主</label>
-  <select id="owner_status">
-    <option value="up">オンライン</option>
-    <option value="nomal">不安定</option>
-    <option value="down">オフライン</option>
-    <option value="maint">メンテナンス</option>
-  </select>
-  <input id="owner_label" type="text" placeholder="ラベル（例: オフラインなど）">
+<hr>
 
-  <label>Minecraft サーバー（※以下2つと連動）</label>
-  <select id="mc_status">
-    <option value="up">正常</option>
-    <option value="nomal">不安定</option>
-    <option value="down">異常</option>
-    <option value="maint">メンテナンス</option>
-  </select>
-  <input id="mc_label" type="text" placeholder="ラベル（例: 稼働中-不安定）">
+<h2>サービス一覧</h2>
+<div id="services"></div>
+<button onclick="addService()">＋ サービス追加</button>
 
-  <p>BE仲介サーバー & 通信サーバー は Minecraft と同じステータスが適用されます。</p>
+<hr>
 
-  <button onclick="saveStatus()">ステータスを保存する</button>
-
-  <div id="saveResult" class="status-box"></div>
-</div>
+<h2>保存</h2>
+<button onclick="saveStatus()">status.json を更新</button>
+<div id="saveMessage"></div>
 
 <script>
-// DOM 取得
-const tokenInput = document.getElementById("token");
-const repoInput  = document.getElementById("repo");
-const pathInput  = document.getElementById("path");
-
-const global_status  = document.getElementById("global_status");
-const global_message = document.getElementById("global_message");
-
-const owner_status = document.getElementById("owner_status");
-const owner_label  = document.getElementById("owner_label");
-
-const mc_status = document.getElementById("mc_status");
-const mc_label  = document.getElementById("mc_label");
-
-const loadResult = document.getElementById("loadResult");
-const saveResult = document.getElementById("saveResult");
-
-// GitHub API URL
-function apiUrl(repo, path) {
-  return `https://api.github.com/repos/${repo}/contents/${path}`;
+// ----------------------------
+// service block generator
+// ----------------------------
+function createServiceBlock(service, index) {
+    return `
+    <div class="service" id="service_${index}">
+        <div class="row">
+            <label>サービス名：<input value="${service.name}" class="s_name"></label>
+        </div>
+        <div class="row">
+            <label>ステータス：
+                <select class="s_status">
+                    <option value="up" ${service.status === "up" ? "selected" : ""}>up</option>
+                    <option value="down" ${service.status === "down" ? "selected" : ""}>down</option>
+                    <option value="nomal" ${service.status === "nomal" ? "selected" : ""}>nomal</option>
+                    <option value="maint" ${service.status === "maint" ? "selected" : ""}>maint</option>
+                </select>
+            </label>
+        </div>
+        <div class="row">
+            <label>ラベル：<input value="${service.label}" class="s_label"></label>
+        </div>
+        <div class="row">
+            <label>
+                <input type="checkbox" class="s_special" ${service.special ? "checked" : ""}>
+                special（任意）
+            </label>
+        </div>
+        <button onclick="deleteService(${index})">削除</button>
+    </div>`;
 }
 
-// status.json を読み込む
+// ----------------------------
+// Add service
+// ----------------------------
+function addService() {
+    const servicesDiv = document.getElementById("services");
+    const index = servicesDiv.children.length;
+
+    const newService = {
+        name: "新しいサービス",
+        status: "up",
+        label: "稼働中",
+        special: false
+    };
+
+    servicesDiv.insertAdjacentHTML("beforeend", createServiceBlock(newService, index));
+}
+
+// ----------------------------
+// Delete service
+// ----------------------------
+function deleteService(index) {
+    document.getElementById("service_" + index).remove();
+}
+
+// ----------------------------
+// Load current status.json
+// ----------------------------
 async function loadStatus() {
-  const token = tokenInput.value;
-  const repo  = repoInput.value;
-  const path  = pathInput.value;
+    const owner = document.getElementById("owner").value;
+    const repo = document.getElementById("repo").value;
+    const url = `https://raw.githubusercontent.com/${owner}/${repo}/main/status.json`;
 
-  try {
-    const res = await fetch(apiUrl(repo, path), {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    document.getElementById("loadMessage").innerText = "読み込み中…";
 
-    if (!res.ok) throw new Error("読み込み失敗");
+    try {
+        const res = await fetch(url + "?t=" + Date.now());
+        if (!res.ok) throw new Error("status.json が読み込めません");
 
-    const data = await res.json();
-    const content = JSON.parse(atob(data.content));
+        const content = await res.json();
 
-    // UI へ反映
-    global_status.value  = content.global.status;
-    global_message.value = content.global.message;
+        // Set global status
+        document.getElementById("global_status").value = content.global.status;
+        document.getElementById("global_label").value = content.global.label;
 
-    owner_status.value = content.services.owner.status;
-    owner_label.value  = content.services.owner.label;
+        // Set services
+        const servicesDiv = document.getElementById("services");
+        servicesDiv.innerHTML = "";
+        content.services.forEach((srv, idx) => {
+            servicesDiv.insertAdjacentHTML("beforeend", createServiceBlock(srv, idx));
+        });
 
-    mc_status.value = content.services.minecraft.status;
-    mc_label.value  = content.services.minecraft.label;
+        document.getElementById("loadMessage").innerText = "読み込み成功！";
 
-    loadResult.textContent = "読み込み完了しました。";
-  } catch (e) {
-    loadResult.textContent = "エラー: " + e.message;
-  }
+    } catch (e) {
+        document.getElementById("loadMessage").innerText = "エラー: " + e.message;
+    }
 }
 
-// ステータス保存
+// ----------------------------
+// Save updated status.json
+// ----------------------------
 async function saveStatus() {
-  const token = tokenInput.value;
-  const repo  = repoInput.value;
-  const path  = pathInput.value;
+    const owner = document.getElementById("owner").value;
+    const repo = document.getElementById("repo").value;
+    const token = document.getElementById("token").value;
 
-  const now = new Date();
-  const updated = now.toLocaleString("ja-JP", { hour12: false });
-
-  const body = {
-    updated: updated,
-    global: {
-      status: global_status.value,
-      message: global_message.value
-    },
-    services: {
-      owner: {
-        status: owner_status.value,
-        label: owner_label.value
-      },
-      minecraft: {
-        status: mc_status.value,
-        label: mc_label.value
-      },
-      be: {
-        status: mc_status.value,
-        label: mc_label.value
-      },
-      network: {
-        status: mc_status.value,
-        label: mc_label.value
-      }
+    if (!token) {
+        alert("Token を入力してください");
+        return;
     }
-  };
 
-  try {
-    // 既存ファイル SHA
-    const getRes = await fetch(apiUrl(repo, path), {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    document.getElementById("saveMessage").innerText = "保存中…";
 
-    if (!getRes.ok) throw new Error("SHA取得失敗");
+    // Build JSON data
+    const servicesDiv = document.getElementById("services");
+    const serviceBlocks = [...servicesDiv.children];
 
-    const getData = await getRes.json();
+    const services = serviceBlocks.map(div => ({
+        name: div.querySelector(".s_name").value,
+        status: div.querySelector(".s_status").value,
+        label: div.querySelector(".s_label").value,
+        special: div.querySelector(".s_special").checked
+    }));
 
-    // 更新 PUT
-    const putRes = await fetch(apiUrl(repo, path), {
-      method: "PUT",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        message: "Update status",
-        content: btoa(unescape(encodeURIComponent(JSON.stringify(body, null, 2)))),
-        sha: getData.sha
-      })
-    });
+    const data = {
+        updated: new Date().toISOString().replace("T", " ").substring(0, 19),
+        global: {
+            status: document.getElementById("global_status").value,
+            label: document.getElementById("global_label").value
+        },
+        services: services
+    };
 
-    if (!putRes.ok) throw new Error("保存失敗");
+    // ----------------------------
+    // Get file SHA
+    // ----------------------------
+    const shaRes = await fetch(
+        `https://api.github.com/repos/${owner}/${repo}/contents/status.json`,
+        { headers: { Authorization: `token ${token}` } }
+    );
 
-    saveResult.textContent = "保存しました！";
+    if (!shaRes.ok) {
+        document.getElementById("saveMessage").innerText = "エラー: SHA取得失敗";
+        return;
+    }
 
-  } catch (e) {
-    saveResult.textContent = "エラー: " + e.message;
-  }
+    const shaData = await shaRes.json();
+    const sha = shaData.sha;
+
+    // ----------------------------
+    // Upload new status.json
+    // ----------------------------
+    const updateRes = await fetch(
+        `https://api.github.com/repos/${owner}/${repo}/contents/status.json`,
+        {
+            method: "PUT",
+            headers: {
+                Authorization: `token ${token}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                message: "Update status.json",
+                content: btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2)))),
+                sha: sha
+            })
+        }
+    );
+
+    if (updateRes.ok) {
+        document.getElementById("saveMessage").innerText = "保存成功！";
+    } else {
+        document.getElementById("saveMessage").innerText = "保存エラー";
+    }
 }
 </script>
-
 
 </body>
 </html>
