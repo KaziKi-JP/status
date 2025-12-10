@@ -1,200 +1,273 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="robots" content="noindex">
-  <meta name="theme-color" content="#34c759">
-  <title>サービス稼働状況</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Minecraft サーバー紹介</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-  <style>
-    /* ==== 既存の CSS そのまま ==== */
-    body {
-      font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      background: #f5f7fa;
-      margin: 0;
-      color: #333;
-    }
-    header {
-      position: fixed;
-      top: 0;
-      width: 100%;
-      background: rgba(245, 247, 250, 0.82);
-      backdrop-filter: blur(6px);
-      padding: 18px 28px 14px;
-      border-bottom: 1px solid #e3e5e8;
-      z-index: 50;
-    }
-    header h1 {
-      margin: 0;
-      font-size: 22px;
-      font-weight: 600;
-    }
-    header p {
-      margin: 3px 0 0;
-      font-size: 13px;
-      color: #666;
-    }
+<style>
+/* ========= 基本 ========= */
+body {
+  font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: #f5f7fa;
+  margin: 0;
+  color: #333;
+}
+main {
+  margin-top: 83px; /* ヘッダー固定分 */
+}
+a {
+  color: #0066cc;
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
 
-    .global-status {
-      margin-top: 83px;
-      text-align: center;
-      padding: 14px 0;
-      font-weight: 600;
-      color: #fff;
-      font-size: 15px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 8px;
-    }
+/* ========= ヘッダー ========= */
+header {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  background: rgba(245, 247, 250, 0.82);
+  backdrop-filter: blur(6px);
+  padding: 18px 28px 14px;
+  border-bottom: 1px solid #e3e5e8;
+  z-index: 50;
+}
+header h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+}
+header p {
+  margin: 3px 0 0;
+  font-size: 13px;
+  color: #666;
+}
 
-    .up    { background: #34c759; }
-    .down  { background: #ff3b30; }
-    .nomal { background: #ffb900; }
-    .maint { background: #ffcc00; color: #333; }
+/* ========= カードデザイン（kaziki-style） ========= */
+.card {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e3e5e8;
+  padding: 22px 28px;
+  margin-bottom: 30px;
+  box-shadow:
+    0 2px 6px rgba(0,0,0,0.06),
+    0 6px 12px rgba(0,0,0,0.03);
+  opacity: 0;
+  transform: translateY(8px);
+  animation: fadeSlide 0.6s ease-out forwards;
+}
+@keyframes fadeSlide {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.card h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 600;
+  margin-top: 0;
+}
 
-    .status-dot {
-      width: 10px;
-      height: 10px;
-      background: currentColor;
-      border-radius: 50%;
-    }
+/* ========= アコーディオン ========= */
+.accordion {
+  background: #f5f7fa;
+  cursor: pointer;
+  padding: 14px 20px;
+  margin-bottom: 5px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  font-size: 15px;
+}
+.accordion i {
+  transition: transform 0.3s;
+}
+.accordion.active i {
+  transform: rotate(180deg);
+}
+.panel {
+  display: none;
+  padding: 0 20px 15px;
+  background: #fff;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
 
-    .service-list {
-      max-width: 780px;
-      margin: 40px auto;
-      padding: 0 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
+/* ========= ギャラリー ========= */
+.slider {
+  position: relative;
+  overflow: hidden;
+  border-radius: 10px;
+  margin-top: 15px;
+}
+.slides {
+  display: flex;
+  transition: transform 0.5s ease-in-out;
+}
+.slides img {
+  width: 100%;
+  flex-shrink: 0;
+  border-radius: 10px;
+}
+.prev, .next {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.3);
+  border: none;
+  color: #fff;
+  font-size: 1.5em;
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 50%;
+  z-index: 10;
+}
+.prev:hover, .next:hover {
+  background: rgba(0,0,0,0.5);
+}
+.prev { left: 10px; }
+.next { right: 10px; }
 
-    .status-card {
-      background: #fff;
-      border-radius: 12px;
-      border: 1px solid #e3e5e8;
-      padding: 22px 28px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow:
-        0 2px 6px rgba(0,0,0,0.06),
-        0 6px 12px rgba(0,0,0,0.03);
-      opacity: 0;
-      transform: translateY(8px);
-      animation: fadeSlide 0.6s ease-out forwards;
-    }
-
-    .status-card.special {
-      background: #e0f7ff;
-      border-color: #e0f7ff;
-      margin-bottom: 30px;
-    }
-    .status-card.special .service-name {
-      color: #007acc;
-    }
-
-    @keyframes fadeSlide {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .service-name {
-      font-size: 18px;
-      font-weight: 600;
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 18px;
-      border-radius: 20px;
-      font-size: 14px;
-      font-weight: 600;
-      color: #fff;
-      backdrop-filter: blur(4px);
-    }
-
-    @media (max-width: 600px) {
-      .status-card {
-        flex-direction: column;
-        text-align: center;
-        gap: 14px;
-        padding: 20px 20px;
-      }
-      .service-name { font-size: 17px; }
-      .badge { font-size: 13px; padding: 7px 14px; }
-    }
-
-    footer {
-      margin-top: 60px;
-      text-align: center;
-      font-size: 12px;
-      color: #999;
-      padding-bottom: 30px;
-    }
-  </style>
+/* ========= レスポンシブ ========= */
+@media (max-width: 600px) {
+  .card {
+    padding: 20px;
+  }
+  .accordion {
+    font-size: 14px;
+  }
+}
+</style>
 </head>
 
 <body>
-  <header>
-    <h1>サービス稼働状況</h1>
-    <p id="updated">最終更新: 読み込み中...</p>
-  </header>
+<header>
+  <h1>My Minecraft Server</h1>
+  <p>楽しいマルチプレイサーバーへようこそ！</p>
+</header>
 
-  <div id="globalStatus" class="global-status">
-    <span class="status-dot"></span>読み込み中...
+<main>
+<div class="container">
+
+  <!-- サーバーバナー -->
+  <div class="card">
+    <img src="https://via.placeholder.com/1000x300?text=Server+Banner" alt="サーバーバナー">
   </div>
 
-  <div class="service-list" id="serviceList"></div>
+  <!-- サーバー情報 -->
+  <div class="card">
+    <h2><i class="fas fa-info-circle"></i> サーバー情報</h2>
+    <ul>
+      <li>サーバーIP: <strong>play.example.com</strong></li>
+      <li>バージョン: <strong>1.20.1</strong></li>
+      <li>モード: <strong>サバイバル / クリエイティブ</strong></li>
+      <li>対応人数: <strong>最大100人</strong></li>
+      <li>公式Discord: <a href="#">参加はこちら</a></li>
+    </ul>
+  </div>
 
-  <footer>© 2025 KKserver</footer>
+  <!-- 特徴 -->
+  <div class="card">
+    <h2><i class="fas fa-star"></i> 特徴</h2>
+    <ul>
+      <li>自由に建築可能なワールド</li>
+      <li>定期イベントやミニゲームあり</li>
+      <li>初心者向けサポート体制完備</li>
+      <li>独自プラグインで快適なプレイ環境</li>
+    </ul>
+  </div>
 
-  <script>
-    // ==== status.json を読み込む ====
-    fetch("status.json")
-      .then(res => res.json())
-      .then(data => {
-        // ◆ 最終更新
-        document.getElementById("updated").textContent =
-          "最終更新: " + data.updated;
+  <!-- ギャラリー -->
+  <div class="card">
+    <h2><i class="fas fa-images"></i> サーバーギャラリー</h2>
+    <div class="slider">
+      <div class="slides">
+        <img src="https://via.placeholder.com/1000x300?text=Screenshot+1" alt="スクリーンショット1">
+        <img src="https://via.placeholder.com/1000x300?text=Screenshot+2" alt="スクリーンショット2">
+        <img src="https://via.placeholder.com/1000x300?text=Screenshot+3" alt="スクリーンショット3">
+      </div>
+      <button class="prev"><i class="fas fa-chevron-left"></i></button>
+      <button class="next"><i class="fas fa-chevron-right"></i></button>
+    </div>
+  </div>
 
-        // ◆ 全体ステータス
-        const gs = document.getElementById("globalStatus");
-        gs.className = "global-status " + data.global.status;
-        gs.innerHTML = `
-          <span class="status-dot"></span>
-          ${data.global.label}
-        `;
+  <!-- サーバー参加方法 -->
+  <div class="card">
+    <h2><i class="fas fa-gamepad"></i> サーバー参加方法</h2>
 
-        // ◆ サービス一覧を生成
-        const list = document.getElementById("serviceList");
-        list.innerHTML = "";
+    <button class="accordion">PC版 <i class="fas fa-chevron-down"></i></button>
+    <div class="panel">
+      <ul>
+        <li>1. Minecraftを起動<br><img src="https://via.placeholder.com/800x200?text=PC+Step+1" alt="PC Step 1"></li>
+        <li>2. マルチプレイ → サーバーを追加<br><img src="https://via.placeholder.com/800x200?text=PC+Step+2" alt="PC Step 2"></li>
+        <li>3. IPを入力: <strong>play.example.com</strong><br><img src="https://via.placeholder.com/800x200?text=PC+Step+3" alt="PC Step 3"></li>
+      </ul>
+    </div>
 
-        data.services.forEach(service => {
-          const card = document.createElement("div");
-          card.className = "status-card" + (service.special ? " special" : "");
+    <button class="accordion">ゲーム機版 <i class="fas fa-chevron-down"></i></button>
+    <div class="panel">
+      <ul>
+        <li>1. Minecraftを起動<br><img src="https://via.placeholder.com/800x200?text=Console+Step+1" alt="Console Step 1"></li>
+        <li>2. サーバーを追加<br><img src="https://via.placeholder.com/800x200?text=Console+Step+2" alt="Console Step 2"></li>
+      </ul>
+    </div>
 
-          card.innerHTML = `
-            <div class="service-name">${service.name}</div>
-            <div class="badge ${service.status}">
-              <span class="status-dot"></span>${service.label}
-            </div>
-          `;
+  </div>
 
-          list.appendChild(card);
-        });
-      })
-      .catch(err => {
-        console.error("JSON読み込みエラー:", err);
-        document.getElementById("globalStatus").innerHTML =
-          "<span class='status-dot'></span>ステータス取得エラー";
-      });
-  </script>
+  <!-- サーバー製作所 -->
+  <div class="card">
+    <h2><i class="fas fa-users"></i> サーバー製作所プロフィール</h2>
+    <div style="display:flex; gap:20px; flex-wrap:wrap;">
+      <div style="flex:1 1 200px; text-align:center;">
+        <img src="https://via.placeholder.com/150" alt="メンバー1" style="border-radius:50%; margin-bottom:10px;">
+        <h3>メンバー1</h3>
+        <p>サーバー管理者 / 建築担当</p>
+      </div>
+    </div>
+  </div>
 
+</div>
+</main>
+
+<script>
+// アコーディオン
+const acc = document.querySelectorAll('.accordion');
+acc.forEach(a => {
+  a.addEventListener('click', () => {
+    a.classList.toggle('active');
+    const panel = a.nextElementSibling;
+    panel.style.display = (panel.style.display === "block") ? "none" : "block";
+  });
+});
+
+// スライダー
+let slideIndex = 0;
+const slidesContainer = document.querySelector('.slides');
+const slides = document.querySelectorAll('.slides img');
+const totalSlides = slides.length;
+
+function updateSlider() {
+  const width = slides[0].clientWidth;
+  slidesContainer.style.transform = `translateX(-${slideIndex * width}px)`;
+}
+document.querySelector('.next').addEventListener('click', () => {
+  slideIndex = (slideIndex + 1) % totalSlides; updateSlider();
+});
+document.querySelector('.prev').addEventListener('click', () => {
+  slideIndex = (slideIndex - 1 + totalSlides) % totalSlides; updateSlider();
+});
+setInterval(() => { slideIndex = (slideIndex + 1) % totalSlides; updateSlider(); }, 4000);
+window.addEventListener('resize', updateSlider);
+</script>
 </body>
 </html>
