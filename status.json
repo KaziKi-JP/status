@@ -1,5 +1,5 @@
 {
-  "updated": "2025/12/11 7:40:58",
+  "updated": "2025/12/11 7:41:13",
   "global": {
     "status": "maint",
     "label": "サーバーに参加できません"
@@ -12,7 +12,7 @@
       "special": true
     },
     {
-      "name": "Minecraft",
+      "name": "Minecraftサーバー",
       "status": "maint",
       "label": "停止中",
       "special": false
