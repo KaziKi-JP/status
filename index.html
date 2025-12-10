@@ -1,233 +1,139 @@
 <!DOCTYPE html>
 <html lang="ja">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- GitHub Pages 最適化 -->
-  <meta name="robots" content="noindex">
-  <!-- 必要なら削除 -->
-  <meta name="theme-color" content="#34c759">
-  <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon">
-  <title>サービス稼働状況</title>
-  <style>
-  /*---------------------------------------
-    基本スタイル
-  ----------------------------------------*/
-  body {
-    font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    background: #f5f7fa;
-    margin: 0;
-    color: #333;
-    -webkit-font-smoothing: antialiased;
-  }
-  
-  /*---------------------------------------
-    固定ヘッダー
-  ----------------------------------------*/
-  header {
-    position: fixed;
-    top: 0;
-    width: 100%;
-    background: rgba(245, 247, 250, 0.82);
-    backdrop-filter: blur(6px);
-    padding: 18px 28px 14px;
-    border-bottom: 1px solid #e3e5e8;
-    z-index: 50;
-  }
-  
-  header h1 {
-    margin: 0;
-    font-size: 22px;
-    font-weight: 600;
-  }
-  
-  header p {
-    margin: 3px 0 0;
-    font-size: 13px;
-    color: #666;
-  }
-
-  
-  /*---------------------------------------
-    総合ステータスバー
-  ----------------------------------------*/
-  .global-status {
-    margin-top: 83px;
-    text-align: center;
-    padding: 14px 0;
-    font-weight: 600;
-    color: #fff;
-    font-size: 15px;
-    line-height: 1.35;
-    transform: translateY(5px);
-  
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-  
-    backdrop-filter: blur(4px);
-  }
-  
-  .up    { background: #34c759; }
-  .down  { background: #ff3b30; }
-  .nomal  { background: #ffb900; }
-  .maint { background: #ffcc00; color: #333; }
-  .stopped { background: #808080; color: #fff; }
-
-
-
-  
-  /* 丸アイコン */
-  .status-dot {
-    width: 10px;
-    height: 10px;
-    background: currentColor;
-    border-radius: 50%;
-  }
-  
-  /*---------------------------------------
-    サービス一覧
-  ----------------------------------------*/
-  .service-list {
-    max-width: 780px;
-    margin: 40px auto;
-    padding: 0 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-  
-  /* ステータスカード（複数行） */
-  .status-card {
-    background: #fff;
-    border-radius: 12px;
-    border: 1px solid #e3e5e8;
-    padding: 22px 28px;
-  
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  
-    box-shadow:
-      0 2px 6px rgba(0,0,0,0.06),
-      0 6px 12px rgba(0,0,0,0.03);
-  
-    opacity: 0;
-    transform: translateY(8px);
-    animation: fadeSlide 0.6s ease-out forwards;
-  }
-/* 特別カード */
-  .status-card.special {
-  background: #e0f7ff;   /* 淡い青 */
-  border-color: #e0f7ff; 
-  margin-bottom: 30px; /* 下に30pxの余白を追加 */
-}
-
-.status-card.special .service-name {
-  color: #007acc;
-}
-
-  
-  @keyframes fadeSlide {
-    to {
-      opacity: 1;
-      transform: translateY(0);
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Status Page</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background: #f8f9fa;
     }
-  }
-  
-  .service-name {
-    font-size: 18px;
-    font-weight: 600;
-  }
-  
-  /*---------------------------------------
-    バッジ
-  ----------------------------------------*/
-  .badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-  
-    padding: 8px 18px;
-    border-radius: 20px;
-    font-size: 14px;
-    font-weight: 600;
-    color: #fff;
-  
-    backdrop-filter: blur(4px);
-  
-    animation: pulse 2.8s ease-in-out infinite;
-  }
-  
-  
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.87; }
-  }
-  
-  /*---------------------------------------
-    レスポンシブ
-  ----------------------------------------*/
-  @media (max-width: 600px) {
-    .status-card {
-      flex-direction: column;
-      text-align: center;
-      gap: 14px;
-      padding: 20px 20px;
+    header {
+        background: #222;
+        color: white;
+        padding: 15px;
+        text-align: center;
+        font-size: 1.4em;
     }
-    .service-name { font-size: 17px; }
-    .badge { font-size: 13px; padding: 7px 14px; }
-  }
-  
-  footer {
-    margin-top: 60px;
-    text-align: center;
-    font-size: 12px;
-    color: #999;
-    padding-bottom: 30px;
-  }
-  </style>
+    .container {
+        max-width: 900px;
+        margin: 30px auto;
+        padding: 20px;
+    }
+    .updated {
+        text-align: right;
+        font-size: 0.9em;
+        color: #555;
+        margin-bottom: 10px;
+    }
+    .global-status {
+        padding: 15px;
+        border-radius: 8px;
+        color: white;
+        font-size: 1.2em;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 25px;
+    }
+
+    /* 色付き */
+    .up { background: #28a745; }
+    .nomal { background: #ffc107; color: #222 !important; }
+    .down { background: #dc3545; }
+    .maint { background: #007bff; }
+
+    /* 個別カード */
+    .card {
+        background: white;
+        border-radius: 10px;
+        padding: 18px;
+        margin-bottom: 18px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .card-title {
+        font-size: 1.2em;
+        margin-bottom: 10px;
+        font-weight: bold;
+    }
+    .status-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 6px;
+        color: white;
+        font-size: 0.95em;
+        font-weight: bold;
+    }
+    .status-up { background: #28a745; }
+    .status-nomal { background: #ffc107; color: #222; }
+    .status-down { background: #dc3545; }
+    .status-maint { background: #007bff; }
+
+    .owner-special {
+        background: #e8f0ff;
+        border-left: 6px solid #4285f4;
+    }
+</style>
 </head>
-
 <body>
-  <header>
-    <h1>サービス稼働状況</h1>
-    <p>最終更新: 2025/12/10 15:00</p>
-  </header>
-  <!-- 全体ステータスバー -->
-  <div class="global-status nomal">
-    <span class="status-dot">
-    </span>サーバーメンテナンス中　サーバーに参加できますが、不安定です</div>
-  <!-- ▼▼ 複数サービス（追加可能） ▼▼ -->
-  <div class="service-list">
-    <div class="status-card special">
-      <div class="service-name">鯖主</div>
-      <div class="badge down">
-        <span class="status-dot">
-        </span>オフライン</div>
-    </div>
-    <div class="status-card">
-      <div class="service-name">Minecraftサーバー</div>
-      <div class="badge nomal">
-        <span class="status-dot">
-        </span>稼働中-不安定</div>
-    </div>
-    <div class="status-card">
-      <div class="service-name">通信サーバー</div>
-      <div class="badge nomal">
-        <span class="status-dot">
-        </span>稼働中-不安定</div>
-    </div>
-    <div class="status-card">
-      <div class="service-name">BE仲介サーバー</div>
-      <div class="badge up">
-        <span class="status-dot">
-        </span>稼働中</div>
-    </div>
-  </div>
-  <footer>© 2025 KKserver</footer>
-</body>
 
+<header>Status Page</header>
+
+<div class="container">
+
+    <div class="updated" id="updated">最終更新: 読み込み中…</div>
+
+    <div id="global" class="global-status">読み込み中…</div>
+
+    <div id="cards"></div>
+</div>
+
+<script>
+// -------------------------
+// status.json 取得
+// -------------------------
+async function loadStatus() {
+    try {
+        const res = await fetch("status/status.json?_" + Date.now());
+        const data = await res.json();
+
+        // 最終更新
+        document.getElementById("updated").textContent =
+            "最終更新: " + data.updated;
+
+        // 全体ステータス
+        const global = document.getElementById("global");
+        global.classList.add(data.global.status);
+        global.textContent = data.global.label;
+
+        // カード生成
+        const area = document.getElementById("cards");
+        area.innerHTML = "";
+
+        for (const item of data.services) {
+            const card = document.createElement("div");
+            card.className = "card" + (item.special ? " owner-special" : "");
+
+            card.innerHTML = `
+                <div class="card-title">${item.name}</div>
+                <span class="status-badge status-${item.status}">
+                    ${item.label}
+                </span>
+            `;
+
+            area.appendChild(card);
+        }
+
+    } catch (err) {
+        document.getElementById("global").textContent =
+            "ステータス読み込みエラー";
+    }
+}
+
+loadStatus();
+</script>
+
+</body>
 </html>
