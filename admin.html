@@ -3,107 +3,164 @@
 <head>
 <meta charset="UTF-8">
 <title>Status 管理画面</title>
+
 <style>
-    body { font-family: sans-serif; padding: 20px; }
-    h2 { margin-top: 40px; }
-    .service { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; }
-    .row { margin-bottom: 5px; }
-    button { padding: 6px 12px; }
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: #111;
+        color: #fff;
+        margin: 0;
+        padding: 20px;
+    }
+
+    h1, h2 {
+        font-weight: 600;
+        border-left: 6px solid #4caf50;
+        padding-left: 10px;
+    }
+
+    .card {
+        background: #1b1b1b;
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        border: 1px solid #333;
+    }
+
+    input, select {
+        width: 100%;
+        padding: 8px;
+        margin-top: 6px;
+        margin-bottom: 12px;
+        border-radius: 6px;
+        border: 1px solid #555;
+        background: #000;
+        color: #fff;
+    }
+
+    button {
+        background: #4caf50;
+        color: #fff;
+        border: none;
+        padding: 10px 16px;
+        font-size: 15px;
+        border-radius: 6px;
+        cursor: pointer;
+        margin: 6px 0;
+    }
+
+    button:hover {
+        opacity: 0.9;
+    }
+
+    .delete-btn {
+        background: #e53935;
+        margin-top: 10px;
+    }
+
+    .service-title {
+        font-size: 18px;
+        margin-bottom: 8px;
+    }
+
+    .status-msg {
+        margin-top: 10px;
+        font-size: 14px;
+        color: #4caf50;
+    }
 </style>
 </head>
 <body>
 
 <h1>ステータス管理画面</h1>
 
-<h2>GitHub 設定</h2>
-<div>
-    <label>リポジトリ所有者（GitHub ユーザー名）：<br>
-        <input id="owner" value="kaziki-jp" style="width:300px">
-    </label><br><br>
-    <label>リポジトリ名：<br>
-        <input id="repo" value="status" style="width:300px">
-    </label><br><br>
-    <label>Token（repo 権限付き Classic Token）：<br>
-        <input id="token" type="password" style="width:300px">
+<div class="card">
+    <h2>GitHub 設定</h2>
+    <label>リポジトリ所有者：
+        <input id="owner" value="kaziki-jp">
+    </label>
+
+    <label>リポジトリ名：
+        <input id="repo" value="status">
+    </label>
+
+    <label>Token（Classic Token repo権限）：
+        <input id="token" type="password">
     </label>
 </div>
 
-<hr>
+<div class="card">
+    <h2>現在のステータスを読み込む</h2>
+    <button onclick="loadStatus()">読み込む</button>
+    <div id="loadMessage" class="status-msg"></div>
+</div>
 
-<h2>現在のステータスを読み込む</h2>
-<button onclick="loadStatus()">読み込む</button>
-<div id="loadMessage"></div>
+<div class="card">
+    <h2>全体ステータス</h2>
 
-<hr>
+    <label>状態：
+        <select id="global_status">
+            <option value="up">up（稼働中）</option>
+            <option value="down">down（ダウン）</option>
+            <option value="nomal">nomal（不安定）</option>
+            <option value="maint">maint（メンテ）</option>
+        </select>
+    </label>
 
-<h2>全体ステータス</h2>
-<label>
-    状態：
-    <select id="global_status">
-        <option value="up">up (稼働中)</option>
-        <option value="down">down (ダウン)</option>
-        <option value="nomal">nomal (不安定)</option>
-        <option value="maint">maint (メンテ)</option>
-    </select>
-</label>
-<br><br>
-<label>
-    ラベル：
-    <input id="global_label" style="width:200px">
-</label>
+    <label>ラベル：
+        <input id="global_label">
+    </label>
+</div>
 
-<hr>
+<div class="card">
+    <h2>サービス一覧</h2>
+    <div id="services"></div>
+    <button onclick="addService()">＋ サービス追加</button>
+</div>
 
-<h2>サービス一覧</h2>
-<div id="services"></div>
-<button onclick="addService()">＋ サービス追加</button>
+<div class="card">
+    <h2>保存</h2>
+    <button onclick="saveStatus()">status.json を更新する</button>
+    <div id="saveMessage" class="status-msg"></div>
+</div>
 
-<hr>
-
-<h2>保存</h2>
-<button onclick="saveStatus()">status.json を更新</button>
-<div id="saveMessage"></div>
 
 <script>
-// ----------------------------
-// service block generator
-// ----------------------------
+// ----------- サービスブロック生成 -----------
 function createServiceBlock(service, index) {
     return `
-    <div class="service" id="service_${index}">
-        <div class="row">
-            <label>サービス名：<input value="${service.name}" class="s_name"></label>
-        </div>
-        <div class="row">
-            <label>ステータス：
-                <select class="s_status">
-                    <option value="up" ${service.status === "up" ? "selected" : ""}>up</option>
-                    <option value="down" ${service.status === "down" ? "selected" : ""}>down</option>
-                    <option value="nomal" ${service.status === "nomal" ? "selected" : ""}>nomal</option>
-                    <option value="maint" ${service.status === "maint" ? "selected" : ""}>maint</option>
-                </select>
-            </label>
-        </div>
-        <div class="row">
-            <label>ラベル：<input value="${service.label}" class="s_label"></label>
-        </div>
-        <div class="row">
-            <label>
-                <input type="checkbox" class="s_special" ${service.special ? "checked" : ""}>
-                special（任意）
-            </label>
-        </div>
-        <button onclick="deleteService(${index})">削除</button>
+    <div class="card" id="service_${index}">
+        <div class="service-title">サービス #${index + 1}</div>
+
+        <label>サービス名：
+            <input value="${service.name}" class="s_name">
+        </label>
+
+        <label>ステータス：
+            <select class="s_status">
+                <option value="up" ${service.status === "up" ? "selected" : ""}>up</option>
+                <option value="down" ${service.status === "down" ? "selected" : ""}>down</option>
+                <option value="nomal" ${service.status === "nomal" ? "selected" : ""}>nomal</option>
+                <option value="maint" ${service.status === "maint" ? "selected" : ""}>maint</option>
+            </select>
+        </label>
+
+        <label>ラベル：
+            <input value="${service.label}" class="s_label">
+        </label>
+
+        <label>
+            <input type="checkbox" class="s_special" ${service.special ? "checked" : ""}>
+            special（任意）
+        </label>
+
+        <button class="delete-btn" onclick="deleteService(${index})">削除</button>
     </div>`;
 }
 
-// ----------------------------
-// Add service
-// ----------------------------
+// ----------- サービス追加 -----------
 function addService() {
-    const servicesDiv = document.getElementById("services");
-    const index = servicesDiv.children.length;
-
+    const index = document.getElementById("services").children.length;
     const newService = {
         name: "新しいサービス",
         status: "up",
@@ -111,41 +168,45 @@ function addService() {
         special: false
     };
 
-    servicesDiv.insertAdjacentHTML("beforeend", createServiceBlock(newService, index));
+    document.getElementById("services").insertAdjacentHTML(
+        "beforeend",
+        createServiceBlock(newService, index)
+    );
 }
 
-// ----------------------------
-// Delete service
-// ----------------------------
+// ----------- サービス削除 -----------
 function deleteService(index) {
     document.getElementById("service_" + index).remove();
 }
 
-// ----------------------------
-// Load current status.json
-// ----------------------------
+// ----------- JST 現在時刻生成 -----------
+function getJSTTimeString() {
+    const date = new Date();
+    return date.toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })
+        .replace(/\//g, "-")
+        .replace(" ", " ");  
+}
+
+// ----------- 読み込み -----------
 async function loadStatus() {
     const owner = document.getElementById("owner").value;
     const repo = document.getElementById("repo").value;
-    const url = `https://raw.githubusercontent.com/${owner}/${repo}/main/status.json`;
 
     document.getElementById("loadMessage").innerText = "読み込み中…";
 
     try {
-        const res = await fetch(url + "?t=" + Date.now());
+        const res = await fetch(`https://raw.githubusercontent.com/${owner}/${repo}/main/status.json?t=${Date.now()}`);
         if (!res.ok) throw new Error("status.json が読み込めません");
 
         const content = await res.json();
 
-        // Set global status
         document.getElementById("global_status").value = content.global.status;
         document.getElementById("global_label").value = content.global.label;
 
-        // Set services
-        const servicesDiv = document.getElementById("services");
-        servicesDiv.innerHTML = "";
+        const list = document.getElementById("services");
+        list.innerHTML = "";
         content.services.forEach((srv, idx) => {
-            servicesDiv.insertAdjacentHTML("beforeend", createServiceBlock(srv, idx));
+            list.insertAdjacentHTML("beforeend", createServiceBlock(srv, idx));
         });
 
         document.getElementById("loadMessage").innerText = "読み込み成功！";
@@ -155,26 +216,21 @@ async function loadStatus() {
     }
 }
 
-// ----------------------------
-// Save updated status.json
-// ----------------------------
+// ----------- 保存（JST対応） -----------
 async function saveStatus() {
     const owner = document.getElementById("owner").value;
     const repo = document.getElementById("repo").value;
     const token = document.getElementById("token").value;
+
+    document.getElementById("saveMessage").innerText = "保存中…";
 
     if (!token) {
         alert("Token を入力してください");
         return;
     }
 
-    document.getElementById("saveMessage").innerText = "保存中…";
-
-    // Build JSON data
-    const servicesDiv = document.getElementById("services");
-    const serviceBlocks = [...servicesDiv.children];
-
-    const services = serviceBlocks.map(div => ({
+    // 収集
+    const services = [...document.getElementById("services").children].map(div => ({
         name: div.querySelector(".s_name").value,
         status: div.querySelector(".s_status").value,
         label: div.querySelector(".s_label").value,
@@ -182,7 +238,7 @@ async function saveStatus() {
     }));
 
     const data = {
-        updated: new Date().toISOString().replace("T", " ").substring(0, 19),
+        updated: getJSTTimeString(),  // ← JST
         global: {
             status: document.getElementById("global_status").value,
             label: document.getElementById("global_label").value
@@ -190,9 +246,7 @@ async function saveStatus() {
         services: services
     };
 
-    // ----------------------------
-    // Get file SHA
-    // ----------------------------
+    // SHA 取得
     const shaRes = await fetch(
         `https://api.github.com/repos/${owner}/${repo}/contents/status.json`,
         { headers: { Authorization: `token ${token}` } }
@@ -203,12 +257,9 @@ async function saveStatus() {
         return;
     }
 
-    const shaData = await shaRes.json();
-    const sha = shaData.sha;
+    const sha = (await shaRes.json()).sha;
 
-    // ----------------------------
-    // Upload new status.json
-    // ----------------------------
+    // 更新
     const updateRes = await fetch(
         `https://api.github.com/repos/${owner}/${repo}/contents/status.json`,
         {
@@ -225,13 +276,9 @@ async function saveStatus() {
         }
     );
 
-    if (updateRes.ok) {
-        document.getElementById("saveMessage").innerText = "保存成功！";
-    } else {
-        document.getElementById("saveMessage").innerText = "保存エラー";
-    }
+    document.getElementById("saveMessage").innerText =
+        updateRes.ok ? "保存成功！" : "保存エラー";
 }
 </script>
-
 </body>
 </html>
