@@ -47,6 +47,15 @@
     font-size: 13px;
     color: #666;
   }
+
+  /*--------------------------------------
+    メッセージ
+  --------------------------------------*/
+    .message {
+      width: 80%;
+      margin: 0 auto;
+      background-color: #FFE580;
+      
   
   /*---------------------------------------
     総合ステータスバー
@@ -71,6 +80,7 @@
   
   .up    { background: #34c759; }
   .down  { background: #ff3b30; }
+  .nomal  { background: #ffb900; }
   .maint { background: #ffcc00; color: #333; }
   .stopped { background: #808080; color: #fff; }
 
@@ -195,10 +205,14 @@
     <p>最終更新: 2025/12/9 17:40</p>
   </header>
   <!-- 全体ステータスバー -->
-  <div class="global-status down">
+  <div class="global-status nomal">
     <span class="status-dot">
-    </span>サーバーに参加できません</div>
+    </span>サーバーメンテナンス中　サーバーに参加できますが、不安定です</div>
   <!-- ▼▼ 複数サービス（追加可能） ▼▼ -->
+
+  <div class="message">
+    <p>サーバーは稼働していますが、鯖主が参加可能なのは5時以降となります。</p>
+  </div>
   <div class="service-list">
     <div class="status-card special">
       <div class="service-name">鯖主</div>
@@ -208,21 +222,21 @@
     </div>
     <div class="status-card">
       <div class="service-name">Minecraftサーバー</div>
-      <div class="badge stopped">
+      <div class="badge nomal">
         <span class="status-dot">
-        </span>休止中</div>
+        </span>稼働中-不安定</div>
     </div>
     <div class="status-card">
       <div class="service-name">通信サーバー</div>
-      <div class="badge stopped">
+      <div class="badge nomal">
         <span class="status-dot">
-        </span>休止中</div>
+        </span>稼働中-不安定</div>
     </div>
     <div class="status-card">
       <div class="service-name">BE仲介サーバー</div>
-      <div class="badge stopped">
+      <div class="badge up">
         <span class="status-dot">
-        </span>休止中</div>
+        </span>稼働中</div>
     </div>
   </div>
   <footer>© 2025 KKserver</footer>
