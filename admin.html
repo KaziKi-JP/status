@@ -245,29 +245,28 @@ footer {
 
 
 <script>
-/* ========== 共通 ========== */
 function notify(msg) {
   const bar = document.getElementById("notify");
   bar.textContent = msg;
   bar.classList.add("show");
-  setTimeout(() => {
-    bar.classList.remove("show");
-  }, 2500);
+  setTimeout(() => bar.classList.remove("show"), 2500);
 }
 
 function apiUrl(repo, path) {
   return `https://api.github.com/repos/${repo}/contents/${path}`;
 }
 
-/* ========== ステータス読み込み ========== */
+/* ===========================
+   ステータス読み込み
+=========================== */
 async function loadStatus() {
-  const token = token.value;
-  const repo = repo.value;
-  const path = path.value;
+  const tokenVal = document.getElementById("token").value;
+  const repoVal  = document.getElementById("repo").value;
+  const pathVal  = document.getElementById("path").value;
 
   try {
-    const res = await fetch(apiUrl(repo, path), {
-      headers: { Authorization: `Bearer ${token}` }
+    const res = await fetch(apiUrl(repoVal, pathVal), {
+      headers: { Authorization: `Bearer ${tokenVal}` }
     });
 
     if (!res.ok) throw new Error("読み込み失敗");
@@ -275,18 +274,22 @@ async function loadStatus() {
     const data = await res.json();
     const content = JSON.parse(atob(data.content));
 
-    global_status.value = content.global.status;
-    global_message.value = content.global.label;
+    document.getElementById("global_status").value = content.global.status;
+    document.getElementById("global_message").value = content.global.label;
 
-    renderServices(content.services);
+    // ★ services に正しくセット
+    services = content.services;
 
+    renderServices(services);
     notify("読み込み成功！");
   } catch (e) {
     notify("エラー: " + e.message);
   }
 }
 
-/* ========== サービス描画 ========== */
+/* ===========================
+   サービス描画
+=========================== */
 function renderServices(list) {
   const box = document.getElementById("serviceList");
   box.innerHTML = "";
@@ -317,7 +320,9 @@ function renderServices(list) {
   });
 }
 
-/* ========== サービス追加 ========== */
+/* ===========================
+   サービス追加
+=========================== */
 function addService() {
   services.push({
     name: "新しいサービス",
@@ -327,37 +332,37 @@ function addService() {
   renderServices(services);
 }
 
-/* ========== サービス削除 ========== */
+/* ===========================
+   サービス削除
+=========================== */
 function removeService(i) {
   services.splice(i, 1);
   renderServices(services);
 }
 
-/* ========== 保存 ========== */
+/* ===========================
+   保存
+=========================== */
 async function saveStatus() {
-  const tokenVal = token.value;
-  const repoVal = repo.value;
-  const pathVal = path.value;
+  const tokenVal = document.getElementById("token").value;
+  const repoVal  = document.getElementById("repo").value;
+  const pathVal  = document.getElementById("path").value;
 
-  // UI からサービスを再構築
+  // UI → 配列再構築
   const inputs = document.querySelectorAll("[data-field]");
-  const servicesTemp = {};
   const newList = [];
 
   inputs.forEach(i => {
     const index = Number(i.dataset.i);
     if (!newList[index]) newList[index] = {};
-
     newList[index][i.dataset.field] = i.value;
   });
 
-  const now = new Date().toLocaleString("ja-JP", { hour12: false });
-
   const body = {
-    updated: now,
+    updated: new Date().toLocaleString("ja-JP", { hour12: false }),
     global: {
-      status: global_status.value,
-      label: global_message.value
+      status: document.getElementById("global_status").value,
+      label: document.getElementById("global_message").value
     },
     services: newList
   };
@@ -366,6 +371,7 @@ async function saveStatus() {
     const getRes = await fetch(apiUrl(repoVal, pathVal), {
       headers: { Authorization: `Bearer ${tokenVal}` }
     });
+
     const getData = await getRes.json();
 
     const putRes = await fetch(apiUrl(repoVal, pathVal), {
@@ -389,9 +395,9 @@ async function saveStatus() {
   }
 }
 
-/* 初期空配列 */
 let services = [];
 </script>
+
 
 </body>
 </html>
