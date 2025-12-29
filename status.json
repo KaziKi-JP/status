@@ -1,32 +1,32 @@
 {
-  "updated": "2025/12/11 14:55:30",
+  "updated": "2025/12/29 11:37:45",
   "global": {
-    "status": "maint",
-    "label": "アップデート中です"
+    "status": "up",
+    "label": "サーバーに参加できます。来てください！"
   },
   "services": [
     {
       "name": "鯖主",
-      "status": "down",
-      "label": "オフライン",
+      "status": "up",
+      "label": "オンライン",
       "special": true
     },
     {
       "name": "Minecraftサーバー",
-      "status": "down",
-      "label": "アップデート",
+      "status": "up",
+      "label": "稼働中",
       "special": false
     },
     {
       "name": "通信サーバー",
-      "status": "maint",
-      "label": "停止中",
+      "status": "up",
+      "label": "稼働中",
       "special": false
     },
     {
       "name": "BE仲介サーバー",
-      "status": "maint",
-      "label": "停止中",
+      "status": "up",
+      "label": "稼働中",
       "special": false
     }
   ]
